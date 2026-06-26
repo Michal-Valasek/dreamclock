@@ -4,78 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DreamClock</title>
-
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main id="app">
-    <section id="clockScreen" class="clock-screen theme-cars">
-      <div class="dark-overlay"></div>
+  <main id="clockScreen" class="clock-screen">
+    <div class="background-dim"></div>
 
-      <header class="top-bar">
-        <div>
-          <div class="brand">DreamClock</div>
-          <div id="themeLabel" class="theme-label">Luxury Cars</div>
-        </div>
+    <section id="clockWrap" class="clock-wrap">
+      <div id="analogClock" class="analog-clock">
+        <div id="ticks" class="ticks"></div>
 
-        <div class="controls">
-          <button id="menuBtn" type="button">Themes</button>
-          <button id="fullscreenBtn" type="button">Fullscreen</button>
-        </div>
-      </header>
+        <div class="number number-12">12</div>
+        <div class="number number-3">3</div>
+        <div class="number number-6">6</div>
+        <div class="number number-9">9</div>
 
-      <section id="themeMenu" class="theme-menu">
-        <div class="menu-header">
-          <div>
-            <h1>DreamClock</h1>
-            <p>Luxury fullscreen analog clocks for TV, PC and phone.</p>
-          </div>
-        </div>
+        <div id="hourHand" class="hand hour-hand"></div>
+        <div id="minuteHand" class="hand minute-hand"></div>
+        <div id="secondHand" class="hand second-hand"></div>
 
-        <div class="theme-grid">
-          <button class="theme-card" data-theme="cars">
-            <span>Luxury Cars</span>
-          </button>
+        <div class="center-dot"></div>
+      </div>
+    </section>
 
-          <button class="theme-card" data-theme="luxury">
-            <span>Luxury Villa</span>
-          </button>
-
-          <button class="theme-card" data-theme="space">
-            <span>Space</span>
-          </button>
-
-          <button class="theme-card" data-theme="ocean">
-            <span>Ocean</span>
-          </button>
-
-          <button class="theme-card" data-theme="nature">
-            <span>Nature</span>
-          </button>
-
-          <button class="theme-card" data-theme="faith">
-            <span>Faith</span>
-          </button>
-        </div>
-      </section>
-
-      <section id="clockWrap" class="clock-wrap">
-        <div id="analogClock" class="analog-clock">
-          <div id="ticks" class="ticks"></div>
-          <div id="numbers" class="numbers"></div>
-
-          <div id="hourHand" class="hand hour-hand"></div>
-          <div id="minuteHand" class="hand minute-hand"></div>
-          <div id="secondHand" class="hand second-hand"></div>
-
-          <div class="center-dot"></div>
-        </div>
-      </section>
-
-      <footer class="bottom-bar">
-        <div id="digitalTime" class="digital-time">--:--:--</div>
-        <div class="hint">F = fullscreen · M = menu · C = next theme · +/- = clock size</div>
-      </footer>
+    <section id="themeMenu" class="theme-menu">
+      <div class="menu-panel">
+        <div class="menu-title">DreamClock</div>
+        <div id="themeGrid" class="theme-grid"></div>
+      </div>
     </section>
   </main>
 

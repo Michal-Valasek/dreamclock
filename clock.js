@@ -1,50 +1,54 @@
 const themes = [
   {
     id: "cars",
-    label: "Luxury Cars"
+    label: "Luxury Cars",
+    file: "themes/cars.jpg"
   },
   {
     id: "luxury",
-    label: "Luxury Villa"
+    label: "Luxury Villa",
+    file: "themes/luxury.jpg"
   },
   {
     id: "space",
-    label: "Space"
+    label: "Space",
+    file: "themes/space.jpg"
   },
   {
     id: "ocean",
-    label: "Ocean"
+    label: "Ocean",
+    file: "themes/ocean.jpg"
   },
   {
     id: "nature",
-    label: "Nature"
+    label: "Nature",
+    file: "themes/nature.jpg"
   },
   {
     id: "faith",
-    label: "Faith"
+    label: "Faith",
+    file: "themes/faith.jpg"
   }
 ];
 
 const clockScreen = document.getElementById("clockScreen");
-const themeLabel = document.getElementById("themeLabel");
 const themeMenu = document.getElementById("themeMenu");
-const menuBtn = document.getElementById("menuBtn");
-const fullscreenBtn = document.getElementById("fullscreenBtn");
+const themeGrid = document.getElementById("themeGrid");
 
 const ticks = document.getElementById("ticks");
-const numbers = document.getElementById("numbers");
 
 const hourHand = document.getElementById("hourHand");
 const minuteHand = document.getElementById("minuteHand");
 const secondHand = document.getElementById("secondHand");
-const digitalTime = document.getElementById("digitalTime");
 
 let currentThemeIndex = 0;
+let selectedThemeId = null;
 let clockScale = 1;
+let cursorTimer = null;
+let isClockMode = false;
 
 function createClockFace() {
   ticks.innerHTML = "";
-  numbers.innerHTML = "";
 
   for (let i = 0; i < 60; i++) {
     const tick = document.createElement("div");
@@ -52,34 +56,13 @@ function createClockFace() {
     tick.style.transform = `translate(-50%, -50%) rotate(${i * 6}deg)`;
     ticks.appendChild(tick);
   }
-
-  const visibleNumbers = [
-    { value: "12", angle: 0 },
-    { value: "3", angle: 90 },
-    { value: "6", angle: 180 },
-    { value: "9", angle: 270 }
-  ];
-
-  visibleNumbers.forEach((item) => {
-    const number = document.createElement("div");
-    number.className = "number";
-    number.textContent = item.value;
-
-    const radius = 38;
-    const rad = (item.angle - 90) * Math.PI / 180;
-    const x = Math.cos(rad) * radius;
-    const y = Math.sin(rad) * radius;
-
-    number.style.transform = `translate(calc(-50% + ${x}%), calc(-50% + ${y}%))`;
-    numbers.appendChild(number);
-  });
 }
 
 function updateClock() {
   const now = new Date();
 
-  const ms = now.getMilliseconds();
-  const seconds = now.getSeconds() + ms / 1000;
+  const milliseconds = now.getMilliseconds();
+  const seconds = now.getSeconds() + milliseconds / 1000;
   const minutes = now.getMinutes() + seconds / 60;
   const hours = (now.getHours() % 12) + minutes / 60;
 
@@ -91,55 +74,105 @@ function updateClock() {
   minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
   secondHand.style.transform = `rotate(${secondDeg}deg)`;
 
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
-  const ss = String(now.getSeconds()).padStart(2, "0");
-
-  digitalTime.textContent = `${hh}:${mm}:${ss}`;
-
   requestAnimationFrame(updateClock);
 }
 
+function setTemplateBackground() {
+  clockScreen.style.backgroundImage = `url("themes/template.png")`;
+}
+
 function setTheme(themeId) {
-  const theme = themes.find((item) => item.id === themeId) || themes[0];
+  const theme = themes.find(item => item.id === themeId) || themes[0];
 
-  themes.forEach((item) => {
-    clockScreen.classList.remove(`theme-${item.id}`);
-  });
+  clockScreen.style.backgroundImage = `url("${theme.file}")`;
 
-  clockScreen.classList.add(`theme-${theme.id}`);
-  themeLabel.textContent = theme.label;
+  selectedThemeId = theme.id;
+  currentThemeIndex = themes.findIndex(item => item.id === theme.id);
+}
 
-  currentThemeIndex = themes.findIndex((item) => item.id === theme.id);
-  localStorage.setItem("dreamclock-theme", theme.id);
+function selectTheme(themeId) {
+  setTheme(themeId);
+  hideMenu();
+
+  history.pushState(
+    { view: "clock", theme: themeId },
+    "",
+    "#clock"
+  );
 }
 
 function nextTheme() {
   currentThemeIndex = (currentThemeIndex + 1) % themes.length;
   setTheme(themes[currentThemeIndex].id);
+  hideMenu();
+
+  history.replaceState(
+    { view: "clock", theme: themes[currentThemeIndex].id },
+    "",
+    "#clock"
+  );
 }
 
-function hideMenu() {
-  themeMenu.classList.add("hidden");
+function createThemeMenu() {
+  themeGrid.innerHTML = "";
+
+  themes.forEach(theme => {
+    const button = document.createElement("button");
+    button.className = "theme-card";
+    button.type = "button";
+    button.dataset.theme = theme.id;
+    button.style.backgroundImage = `url("${theme.file}")`;
+
+    const label = document.createElement("span");
+    label.textContent = theme.label;
+
+    button.appendChild(label);
+
+    button.addEventListener("click", () => {
+      selectTheme(theme.id);
+    });
+
+    themeGrid.appendChild(button);
+  });
 }
 
 function showMenu() {
+  isClockMode = false;
+  setTemplateBackground();
   themeMenu.classList.remove("hidden");
+  document.body.classList.remove("hide-cursor");
+}
+
+function hideMenu() {
+  isClockMode = true;
+
+  if (selectedThemeId) {
+    setTheme(selectedThemeId);
+  }
+
+  themeMenu.classList.add("hidden");
+  hideCursorSoon();
 }
 
 function toggleMenu() {
-  themeMenu.classList.toggle("hidden");
-}
+  if (themeMenu.classList.contains("hidden")) {
+    showMenu();
 
-async function requestFullscreenMode() {
-  const element = document.documentElement;
+    history.pushState(
+      { view: "menu" },
+      "",
+      "#home"
+    );
+  } else {
+    hideMenu();
 
-  try {
-    if (!document.fullscreenElement) {
-      await element.requestFullscreen();
+    if (selectedThemeId) {
+      history.pushState(
+        { view: "clock", theme: selectedThemeId },
+        "",
+        "#clock"
+      );
     }
-  } catch (error) {
-    console.warn("Fullscreen request failed:", error);
   }
 }
 
@@ -151,58 +184,44 @@ async function toggleFullscreen() {
       await document.exitFullscreen();
     }
   } catch (error) {
-    console.warn("Fullscreen toggle failed:", error);
+    console.warn("Fullscreen failed:", error);
   }
 }
 
 function setClockScale(newScale) {
-  clockScale = Math.min(1.35, Math.max(0.7, newScale));
-  const value = `min(${62 * clockScale}vw, ${62 * clockScale}vh)`;
-  document.documentElement.style.setProperty("--clock-size", value);
-  localStorage.setItem("dreamclock-scale", String(clockScale));
+  clockScale = Math.min(1.35, Math.max(0.65, newScale));
+
+  const size = `min(${62 * clockScale}vw, ${62 * clockScale}vh)`;
+  document.documentElement.style.setProperty("--clock-size", size);
 }
 
-function loadSavedSettings() {
-  const savedTheme = localStorage.getItem("dreamclock-theme");
-  const savedScale = Number(localStorage.getItem("dreamclock-scale"));
+function hideCursorSoon() {
+  document.body.classList.remove("hide-cursor");
 
-  if (savedTheme) {
-    setTheme(savedTheme);
-  } else {
-    setTheme("cars");
+  if (cursorTimer) {
+    clearTimeout(cursorTimer);
   }
 
-  if (!Number.isNaN(savedScale) && savedScale > 0) {
-    setClockScale(savedScale);
-  }
+  cursorTimer = setTimeout(() => {
+    if (themeMenu.classList.contains("hidden")) {
+      document.body.classList.add("hide-cursor");
+    }
+  }, 2200);
 }
 
-document.querySelectorAll(".theme-card").forEach((button) => {
-  button.addEventListener("click", async () => {
-    const themeId = button.dataset.theme;
-    setTheme(themeId);
-    hideMenu();
-
-    await requestFullscreenMode();
-  });
-});
-
-menuBtn.addEventListener("click", toggleMenu);
-fullscreenBtn.addEventListener("click", toggleFullscreen);
-
-document.addEventListener("keydown", async (event) => {
+document.addEventListener("keydown", async event => {
   const key = event.key.toLowerCase();
 
   if (key === "m") {
     toggleMenu();
   }
 
-  if (key === "c") {
-    nextTheme();
-  }
-
   if (key === "f") {
     await toggleFullscreen();
+  }
+
+  if (key === "c") {
+    nextTheme();
   }
 
   if (key === "+" || key === "=") {
@@ -214,10 +233,48 @@ document.addEventListener("keydown", async (event) => {
   }
 
   if (key === "escape") {
-    showMenu();
+    if (!themeMenu.classList.contains("hidden")) {
+      showMenu();
+
+      history.replaceState(
+        { view: "menu" },
+        "",
+        "#home"
+      );
+    }
   }
 });
 
+document.addEventListener("mousemove", hideCursorSoon);
+
+document.addEventListener("dblclick", async () => {
+  if (themeMenu.classList.contains("hidden")) {
+    await toggleFullscreen();
+  }
+});
+
+window.addEventListener("popstate", () => {
+  showMenu();
+});
+
+/*
+  START:
+  - background = themes/template.png
+  - menu is open
+  - template is NOT selectable
+  - after theme click: menu disappears and selected background remains
+  - browser back button returns to home/menu like pressing M
+*/
+
 createClockFace();
-loadSavedSettings();
+createThemeMenu();
+setTemplateBackground();
+showMenu();
+
+history.replaceState(
+  { view: "menu" },
+  "",
+  "#home"
+);
+
 updateClock();
