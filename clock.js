@@ -70,7 +70,7 @@ function createClockFace() {
     const x = Math.cos(rad) * radius;
     const y = Math.sin(rad) * radius;
 
-    number.style.transform = `translate(${x}%, ${y}%)`;
+    number.style.transform = `translate(calc(-50% + ${x}%), calc(-50% + ${y}%))`;
     numbers.appendChild(number);
   });
 }
