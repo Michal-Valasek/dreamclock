@@ -174,14 +174,13 @@ button {
   top: 50%;
   width: 56px;
   height: 36px;
-  margin-left: -28px;
-  margin-top: -18px;
   display: grid;
   place-items: center;
   color: var(--white);
   font-size: clamp(16px, 2.1vw, 34px);
   font-weight: 300;
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.85);
+  transform: translate(-50%, -50%);
 }
 
 .hand {
